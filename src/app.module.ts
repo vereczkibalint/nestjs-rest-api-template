@@ -1,10 +1,12 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { ConfigModule } from '@nestjs/config';
 import { AuthorizationModule } from './authorization/authorization.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config/dist';
 import { UsersModule } from './users/users.module';
+import { NetworkLoggerMiddleware } from './common/middlewares/network-logger.middleware';
+import { NetworkCorrelationMiddleware } from './common/middlewares/network-correlation.middleware';
 
 @Module({
   imports: [
@@ -21,4 +23,8 @@ import { UsersModule } from './users/users.module';
   ],
   controllers: [AppController]
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+      consumer.apply(NetworkCorrelationMiddleware, NetworkLoggerMiddleware).forRoutes('*');
+  }
+}
